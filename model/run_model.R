@@ -19,20 +19,23 @@ library(dplyr) # pipe operator
 # PARAMETERS --------------------------------------------------------------
 
 # parameters that do not change on any patient or intervention loop
-common_all_inputs <- add_item(util.stable = 0.8, 
-                              util.acute = 0.4,
-                              cost.stable = 1000,
-                              cost.acute = 500,
-                              cost.int = 1000, # cost of interventions
-                              coef_noint = log(0.2), # time to event coefficient with no intervention
-                              HR_int = 0.8 # hazard ratio of intervention
+common_all_inputs <- add_item(util.stable = 0.8, #TEMP
+                              util.acute = 0.4, #TEMP
+                              cost.stable = 1000, #TEMP
+                              cost.acute = 500, #TEMP
+                              cost.int = 1000, #TEMP # cost of interventions
+                              coef.noint_time_to_acute = 0.66, #TEMP
+                              coef.noint_time_to_stable = 0.33, #TEMP
+                              HR_int = 0.8 #TEMP # hazard ratio of intervention
                               ) 
 
 # objects that do not change between intervention loops
-common_pt_inputs <- add_item(death= max(0.0000001,rnorm(n=1, mean=12, sd=3)))
+common_pt_inputs <- add_item(age=max(16, rnorm(n=1, mean=23.52, sd=2.85)), #TEMP
+                             death = 60 #TEMP
+                             )
 
 # objects that change through treatment loops
-unique_pt_inputs <- add_item(fl.stable = 1)
+unique_pt_inputs <- add_item(fl.acute = 0)
 
 
 # EVENT STRUCTURE ---------------------------------------------------------
@@ -40,7 +43,7 @@ unique_pt_inputs <- add_item(fl.stable = 1)
 # define initial events and intervention arms
 init_event_list <- 
   # no intervention
-  add_tte(trt="noint", evts = c("stable", "acute", "death"), input = {
+  add_tte(trt="CM_MED", evts = c("stable", "acute", "death"), input = {
     stable <- 0
     acute <- draw_tte(1, dist="exp", coef1=coef_noint)
   }) %>%
@@ -56,7 +59,7 @@ evt_react_list <-
                input = {}) %>%
   add_reactevt(name_evt = "acute",
                input = {
-                 modify_item(list(fl.stable = 0))
+                 modify_item(list(fl.acute = 1))
                }) %>%
   add_reactevt(name_evt = "death",
                input = {
